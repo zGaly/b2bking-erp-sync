@@ -68,7 +68,7 @@ This plugin is provided as a custom solution. For support, updates, or integrati
 
 == Author ==
 
-Developed by José Luís – (c) 2024  
+Developed by José Luís – (c) 2025
 All rights reserved.
 
 
