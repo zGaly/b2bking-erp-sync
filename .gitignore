@@ -1,0 +1,21 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore log files
+*.log
+
+# Ignore environment/config files
+.env
+*.env
+
+# Ignore archives or backup files
+*.zip
+*.bak
+
+# Ignore vendor and node_modules if used
+/vendor/
+/node_modules/
+
+/uploads/
+/.cache/

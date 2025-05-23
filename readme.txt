@@ -1,0 +1,74 @@
+=== B2BKing ERP Sync (JSON Importer) ===
+Note: This plugin is shared publicly for portfolio and demonstration purposes only. It is a proprietary solution. Redistribution or commercial use is prohibited without explicit permission from the author.
+
+
+Contributors: joseluis
+Tags: b2bking, woocommerce, erp, json, rest api, phc, dynamic pricing
+Requires at least: 5.8
+Tested up to: 6.5
+Requires PHP: 7.4
+Stable tag: 1.0
+License: Proprietary – All Rights Reserved
+License URI: https://www.joseluis.dev/license
+
+Plugin for automatic integration between ERPs (such as PHC) and the B2BKing plugin in WooCommerce stores, via JSON and REST API.
+
+== Description ==
+
+This plugin creates a custom endpoint in the WordPress REST API that allows importing pricing and business rule data directly into B2BKing. The data is sent in JSON format, typically generated from an ERP such as PHC CS or PHC GO.
+
+The plugin interprets the data and applies:
+- Group-based prices (SkuGeneralTab)
+- Personalized discounts per customer (Discount Percentage)
+- Fixed prices per customer (Fixed Price)
+
+No need for CSV files, manual imports, or actions in the back office.
+
+== Installation ==
+
+1. Upload the ZIP file via the WordPress admin panel (Plugins > Add New > Upload Plugin).
+2. Activate the plugin.
+3. Ensure that B2BKing is installed and active.
+4. Send the data to the endpoint via POST:
+   https://[yourdomain]/wp-json/custom/v1/import-dados-b2bking
+   Header:
+   Content-Type: application/json
+
+== JSON Example ==
+
+[
+  {
+    "RuleType": "SkuGeneralTab",
+    "ForWho": "Revendedores",
+    "SKU": "SYS-0015300",
+    "HowMuch": "28.70"
+  },
+  {
+    "RuleType": "Discount (Percentage)",
+    "ApliesTo": "SYS-0015300",
+    "ForWho": "adm_csw",
+    "HowMuch": "10",
+    "Priority": "1"
+  },
+  {
+    "RuleType": "Fixed Price",
+    "ApliesTo": "SYS-0015301",
+    "ForWho": "cliente_xpto",
+    "HowMuch": "24.99"
+  }
+]
+
+== Security ==
+
+It is recommended to implement token authentication or IP whitelisting for production use.
+
+== Support ==
+
+This plugin is provided as a custom solution. For support, updates, or integration with other ERP systems, please contact the author directly.
+
+== Author ==
+
+Developed by José Luís – (c) 2024  
+All rights reserved.
+
+

@@ -1,0 +1,11 @@
+Copyright (c) 2025 José Luís
+
+All Rights Reserved.
+
+This software is proprietary and protected under copyright law. It is provided for private or commercial use under explicit authorization only.
+
+You may not reproduce, distribute, sublicense, rent, lease, or sell this software or its components without written permission from the author.
+
+Unauthorized use of this software is a violation of international copyright law.
+
+For licensing inquiries or commercial use, please contact: jose.luis@example.com
