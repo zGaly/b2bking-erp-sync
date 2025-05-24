@@ -8,6 +8,10 @@ Copyright: (c) 2025 José Luís
 License: Proprietary – All Rights Reserved
 */
 
+if (!defined('B2BKING_API_TOKEN')) {
+    define('B2BKING_API_TOKEN', 'd7a23e94cf584e3fb5a2dbac4f7f5b3ce0a9fc1e4c63989e08b457f4af732c95');
+}
+
 add_action('init', function () {
     if (!function_exists('wc_get_product_id_by_sku')) {
         include_once ABSPATH . 'wp-content/plugins/woocommerce/includes/wc-product-functions.php';
@@ -19,7 +23,10 @@ add_action('init', function () {
         register_rest_route('custom/v1', '/import-dados-b2bking', [
             'methods' => 'POST',
             'callback' => 'import_b2bking_json_data_direct',
-            'permission_callback' => '__return_true',
+            'permission_callback' => function () {
+                $headers = getallheaders();
+                return isset($headers['X-Auth-Token']) && $headers['X-Auth-Token'] === B2BKING_API_TOKEN;
+            },
         ]);
     });
 });

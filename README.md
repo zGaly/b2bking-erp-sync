@@ -31,6 +31,7 @@ https://yourdomain.com/wp-json/custom/v1/import-dados-b2bking
 
 Headers:
 ```
+X-Auth-Token: your_secure_token
 Content-Type: application/json
 ```
 
@@ -62,7 +63,7 @@ Content-Type: application/json
 
 ## Security
 
-It is recommended to protect this endpoint using API keys or IP whitelisting in production environments.
+This plugin uses token-based authentication via the 'X-Auth-Token' HTTP header. Make sure to store your token securely and rotate it periodically to maintain endpoint security.
 
 ## License
 

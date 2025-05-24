@@ -31,8 +31,9 @@ No need for CSV files, manual imports, or actions in the back office.
 3. Ensure that B2BKing is installed and active.
 4. Send the data to the endpoint via POST:
    https://[yourdomain]/wp-json/custom/v1/import-dados-b2bking
-   Header:
+   Headers:
    Content-Type: application/json
+   X-Auth-Token: [your_secure_token]
 
 == JSON Example ==
 
@@ -60,7 +61,7 @@ No need for CSV files, manual imports, or actions in the back office.
 
 == Security ==
 
-It is recommended to implement token authentication or IP whitelisting for production use.
+This plugin uses token-based authentication via the 'X-Auth-Token' header. It is recommended to keep the token secret and rotate it periodically for enhanced security.
 
 == Support ==
 
