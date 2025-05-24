@@ -9,7 +9,7 @@ License: Proprietary – All Rights Reserved
 */
 
 if (!defined('B2BKING_API_TOKEN')) {
-    define('B2BKING_API_TOKEN', 'd7a23e94cf584e3fb5a2dbac4f7f5b3ce0a9fc1e4c63989e08b457f4af732c95');
+    return;
 }
 
 add_action('init', function () {
