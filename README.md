@@ -6,15 +6,16 @@
 
 B2BKing ERP Sync is a custom WordPress plugin that enables automatic integration between ERPs (such as PHC) and the B2BKing plugin for WooCommerce.
 
-It works by exposing a REST API endpoint which accepts JSON data that defines business rules like pricing, discounts, and customer-specific conditions.
+It works by exposing a REST API endpoint that accepts JSON data to create customer-specific pricing rules, without modifying user group associations.
 
 ## Features
 
-- Group-based pricing per SKU
-- Percentage discounts per user and product
-- Fixed pricing per user
+- Group-based pricing per SKU (`SkuGeneralTab`)
+- Percentage discounts per user and product (`Discount (Percentage)`)
+- Fixed pricing per user (`Fixed Price`)
 - Priority-based rule handling
 - JSON-based input compatible with PHC and other ERP systems
+- Token-protected REST API
 
 ## Installation
 
@@ -40,16 +41,17 @@ Content-Type: application/json
 ```json
 [
   {
-    "RuleType": "SkuGeneralTab",
+    "RuleType": "GroupPrice",
     "ForWho": "Revendedores",
     "SKU": "SYS-0015300",
-    "HowMuch": "28.70"
+    "HowMuch": "28.70",
+    "Priority": "3"
   },
   {
     "RuleType": "Discount (Percentage)",
     "ApliesTo": "SYS-0015300",
     "ForWho": "adm_csw",
-    "HowMuch": "10",
+    "HowMuch": "11",
     "Priority": "1"
   },
   {

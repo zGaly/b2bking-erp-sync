@@ -3,7 +3,7 @@ Note: This plugin is shared publicly for portfolio and demonstration purposes on
 
 
 Contributors: joseluis
-Tags: b2bking, woocommerce, erp, json, rest api, phc, dynamic pricing
+Tags: b2bking, woocommerce, erp integration, json importer, rest api, dynamic pricing, phc
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
@@ -15,14 +15,18 @@ Plugin for automatic integration between ERPs (such as PHC) and the B2BKing plug
 
 == Description ==
 
-This plugin creates a custom endpoint in the WordPress REST API that allows importing pricing and business rule data directly into B2BKing. The data is sent in JSON format, typically generated from an ERP such as PHC CS or PHC GO.
+This plugin exposes a secure custom endpoint in the WordPress REST API that receives structured pricing rules in JSON format and creates corresponding dynamic pricing rules in the B2BKing plugin for WooCommerce.
 
-The plugin interprets the data and applies:
+It is designed to be used in ERP-to-ecommerce integrations, enabling WooCommerce stores to reflect the same customer-specific pricing rules maintained in external systems like PHC CS or PHC GO.
+
+The plugin interprets incoming data and applies:
 - Group-based prices (SkuGeneralTab)
-- Personalized discounts per customer (Discount Percentage)
-- Fixed prices per customer (Fixed Price)
+- Personalized percentage discounts per product and customer (Discount Percentage)
+- Fixed prices per product and customer (Fixed Price)
 
-No need for CSV files, manual imports, or actions in the back office.
+It does not manage group assignments or user-role logic. Each rule is applied independently using SKU, user login, and priority as key identifiers.
+
+There is no need for CSV uploads or manual admin actions — pricing sync is automated via API.
 
 == Installation ==
 
@@ -35,20 +39,21 @@ No need for CSV files, manual imports, or actions in the back office.
    Content-Type: application/json
    X-Auth-Token: [your_secure_token]
 
-== JSON Example ==
+== JSON Example (All Rule Types) ==
 
 [
   {
-    "RuleType": "SkuGeneralTab",
+    "RuleType": "GroupPrice",
     "ForWho": "Revendedores",
     "SKU": "SYS-0015300",
-    "HowMuch": "28.70"
+    "HowMuch": "28.70",
+    "Priority": "3"
   },
   {
     "RuleType": "Discount (Percentage)",
     "ApliesTo": "SYS-0015300",
     "ForWho": "adm_csw",
-    "HowMuch": "10",
+    "HowMuch": "11",
     "Priority": "1"
   },
   {
