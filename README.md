@@ -53,12 +53,6 @@ Content-Type: application/json
     "ForWho": "adm_csw",
     "HowMuch": "11",
     "Priority": "1"
-  },
-  {
-    "RuleType": "Fixed Price",
-    "ApliesTo": "SYS-0015301",
-    "ForWho": "cliente_xpto",
-    "HowMuch": "24.99"
   }
 ]
 ```
