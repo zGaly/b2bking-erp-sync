@@ -14,6 +14,9 @@ if (!function_exists('wc_get_product_id_by_sku')) {
     }
 }
 
+// DEPRECATED: Products must be created manually in WooCommerce
+// This function is no longer used to avoid automatic product creation
+/*
 function create_woocommerce_product_if_not_exists($sku) {
     $product_id = wc_get_product_id_by_sku($sku);
     if ($product_id) {
@@ -37,6 +40,7 @@ function create_woocommerce_product_if_not_exists($sku) {
     
     return false;
 }
+*/
 
 function create_b2bking_group_if_not_exists($group_name) {
     $group_id = get_b2bking_group_id_by_name($group_name);
@@ -154,7 +158,13 @@ function import_b2bking_entries($entries) {
                 $group_name = sanitize_text($item['ForWho'] ?? '');
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
 
-                $product_id = create_woocommerce_product_if_not_exists($sku);
+                // Check if product exists (don't create automatically)
+                $product_id = wc_get_product_id_by_sku($sku);
+                if (!$product_id) {
+                    $results[] = "[$index] ERROR: Product with SKU '$sku' does not exist. Please create the product first.";
+                    continue;
+                }
+
                 $group_id = create_b2bking_group_if_not_exists($group_name);
 
                 if ($product_id && $group_id && is_numeric($price)) {
@@ -189,10 +199,10 @@ function import_b2bking_entries($entries) {
                 $discount = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
                 $priority = isset($item['Priority']) ? intval($item['Priority']) : 1;
 
-                // Create product if it doesn't exist
-                $product_id = create_woocommerce_product_if_not_exists($sku);
+                // Check if product exists (don't create automatically)
+                $product_id = wc_get_product_id_by_sku($sku);
                 if (!$product_id) {
-                    $results[] = "[$index] ERROR: Could not create/find product with SKU: $sku";
+                    $results[] = "[$index] ERROR: Product with SKU '$sku' does not exist. Please create the product first.";
                     continue;
                 }
 
@@ -232,7 +242,13 @@ function import_b2bking_entries($entries) {
                 $user_data = $item['ForWho'] ?? '';
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
 
-                $product_id = create_woocommerce_product_if_not_exists($sku);
+                // Check if product exists (don't create automatically)
+                $product_id = wc_get_product_id_by_sku($sku);
+                if (!$product_id) {
+                    $results[] = "[$index] ERROR: Product with SKU '$sku' does not exist. Please create the product first.";
+                    continue;
+                }
+
                 $user_id = create_user_if_not_exists($user_data);
 
                 if ($product_id && $user_id && is_numeric($price)) {

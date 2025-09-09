@@ -5,10 +5,12 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 ## Funcionalidades
 
 ### Criação Automática de Entidades
-- **Produtos WooCommerce** - Criados automaticamente se não existirem
+- **~~Produtos WooCommerce~~** - **IMPORTANTE:** Produtos devem ser criados manualmente no WooCommerce
 - **Utilizadores WordPress** - Criados com informações completas do ERP
 - **Grupos B2BKing** - Criados baseados em tabelas de preços
-- **Regras Dinâmicas B2BKing** - Aplicadas automaticamenteTipos de Regras Suportadas
+- **Regras Dinâmicas B2BKing** - Aplicadas automaticamente
+
+### Tipos de Regras Suportadas
 - **Group Price / SkuGeneralTab** - Preços fixos para grupos
 - **Discount (Percentage)** - Descontos percentuais para utilizadores
 - **Fixed Price** - Preços fixos para utilizadores específicos
@@ -27,6 +29,26 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 
 ```php
 define('B2BKING_API_TOKEN', 'seu_token_seguro_aqui');
+```
+
+## **IMPORTANTE - Pré-requisitos**
+
+### **Produtos devem existir no WooCommerce**
+Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**. 
+
+**OBRIGATÓRIO:**
+1. Criar produtos manualmente no WooCommerce ANTES de sincronizar
+2. Garantir que os SKUs coincidem exatamente
+3. Produtos devem estar publicados e visíveis
+
+**Se o produto não existir:**
+```json
+{
+  "status": "completed",
+  "report": [
+    "[0] ERROR: Product with SKU 'ABC123' does not exist. Please create the product first."
+  ]
+}
 ```
 
 ## API Endpoint
@@ -176,7 +198,7 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
 - Facilita debugging e auditoria
 - Visible nos logs do WordPress
 
-## 🔧 Requisitos
+## Requisitos
 
 - WordPress 5.0+
 - WooCommerce 3.0+
@@ -184,6 +206,12 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
 - PHP 7.4+
 
 ## Changelog
+
+### v2.3 **BREAKING CHANGE**
+- **REMOVIDA criação automática de produtos** - Produtos devem existir no WooCommerce antes de criar regras
+- **Validação obrigatória** - API retorna erro se produto não existir
+- **Maior segurança** - Evita criação acidental de produtos com dados incorretos
+- **Mensagens de erro melhoradas** - Feedback claro quando produtos não existem
 
 ### v2.2
 - Criação automática de utilizadores com dados completos
