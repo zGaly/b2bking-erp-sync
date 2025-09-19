@@ -10,7 +10,13 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 - **Grupos B2BKing** - Criados baseados em tabelas de preços
 - **Regras Dinâmicas B2BKing** - Aplicadas automaticamente
 
-### Tipos de Regras Suportadas
+### **Sistema de Prioridades**
+- **Prioridades** definem a ordem de aplicação das regras
+- **Valores menores** = **maior prioridade** (executam primeiro)
+- **Campo opcional** - se não especificado, usa prioridade "1"
+- **Todas as regras** suportam o campo `"Priority"`
+
+### 🔧 Tipos de Regras Suportadas
 - **Group Price / SkuGeneralTab** - Preços fixos para grupos
 - **Discount (Percentage)** - Descontos percentuais para utilizadores
 - **Fixed Price** - Preços fixos para utilizadores específicos
@@ -73,7 +79,8 @@ Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**.
     "tipodesc": "Grossista",
     "tabelaPrecos": "A"
   },
-  "HowMuch": "10.50"
+  "HowMuch": "10.50",
+  "Priority": "2"
 }
 ```
 
@@ -101,7 +108,8 @@ Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**.
   "RuleType": "GroupPrice",
   "SKU": "SKU789",
   "ForWho": "Grossistas",
-  "HowMuch": "25.00"
+  "HowMuch": "25.00",
+  "Priority": "3"
 }
 ```
 
@@ -112,7 +120,8 @@ Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**.
     "RuleType": "Fixed Price",
     "ApliesTo": "SKU001",
     "ForWho": "cliente1",
-    "HowMuch": "5.99"
+    "HowMuch": "5.99",
+    "Priority": "1"
   },
   {
     "RuleType": "Discount (Percentage)",
@@ -122,6 +131,28 @@ Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**.
     "Priority": "2"
   }
 ]
+```
+
+## Exemplo de Chamada cURL
+
+```bash
+curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
+  -H "X-Auth-Token: seu_token_aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "RuleType": "Fixed Price",
+    "ApliesTo": "SKU123",
+    "ForWho": {
+      "no": "5965",
+      "nome": "Empresa XYZ",
+      "email": "empresa@xyz.com",
+      "inativo": false,
+      "tipodesc": "Grossista",
+      "tabelaPrecos": "A"
+    },
+    "HowMuch": "10.50",
+    "Priority": "2"
+  }'
 ```
 
 ## Exemplo de Chamada cURL
@@ -152,7 +183,7 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
 {
   "status": "completed",
   "report": [
-    "[0] SUCCESS: Fixed price rule created for user 'Empresa XYZ' on product SKU123 = 10.5 (Rule ID: 12345)"
+    "[0] SUCCESS: Fixed price rule created for user 'Empresa XYZ' on product SKU123 = 10.5 (Priority: 2, Rule ID: 12345)"
   ]
 }
 ```
@@ -206,6 +237,12 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
 - PHP 7.4+
 
 ## Changelog
+
+### v2.4 ✨ **NEW FEATURE**
+- **Suporte completo ao campo Priority** - Todas as regras aceitam prioridade customizada
+- **Sistema de prioridades** - Controlo total sobre ordem de aplicação das regras
+- **Feedback melhorado** - Mensagens de sucesso incluem informação de prioridade
+- **Retrocompatibilidade** - Priority opcional (default = 1)
 
 ### v2.3 **BREAKING CHANGE**
 - **REMOVIDA criação automática de produtos** - Produtos devem existir no WooCommerce antes de criar regras

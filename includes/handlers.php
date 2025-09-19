@@ -14,34 +14,6 @@ if (!function_exists('wc_get_product_id_by_sku')) {
     }
 }
 
-// DEPRECATED: Products must be created manually in WooCommerce
-// This function is no longer used to avoid automatic product creation
-/*
-function create_woocommerce_product_if_not_exists($sku) {
-    $product_id = wc_get_product_id_by_sku($sku);
-    if ($product_id) {
-        return $product_id;
-    }
-
-    $product = new WC_Product();
-    $product->set_name($sku);
-    $product->set_sku($sku);
-    $product->set_status('publish');
-    $product->set_catalog_visibility('visible');
-    $product->set_price(0);
-    $product->set_regular_price(0);
-    
-    $new_product_id = $product->save();
-    
-    if ($new_product_id) {
-        error_log("B2BKing ERP Sync: Created new product with SKU: $sku (ID: $new_product_id)");
-        return $new_product_id;
-    }
-    
-    return false;
-}
-*/
-
 function create_b2bking_group_if_not_exists($group_name) {
     $group_id = get_b2bking_group_id_by_name($group_name);
     if ($group_id) {
@@ -157,6 +129,7 @@ function import_b2bking_entries($entries) {
                 $sku = sanitize_text($item['SKU'] ?? '');
                 $group_name = sanitize_text($item['ForWho'] ?? '');
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
+                $priority = isset($item['Priority']) ? max(1, min(10, intval($item['Priority']))) : 1;
 
                 // Check if product exists (don't create automatically)
                 $product_id = wc_get_product_id_by_sku($sku);
@@ -182,9 +155,11 @@ function import_b2bking_entries($entries) {
                         update_post_meta($post_id, 'b2bking_rule_who', 'group_' . $group_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
-                        update_post_meta($post_id, 'b2bking_rule_priority', '1');
+                        update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                        
+                        error_log("B2BKing ERP Sync: Setting priority $priority for group rule $post_id using b2bking_rule_priority meta key");
 
-                        $results[] = "[$index] SUCCESS: Group price rule created for product $sku in group $group_name = $price (Rule ID: $post_id)";
+                        $results[] = "[$index] SUCCESS: Group price rule created for product $sku in group $group_name = $price (Priority: $priority, Rule ID: $post_id)";
                     } else {
                         $results[] = "[$index] ERROR: Failed to create group price rule for $sku";
                     }
@@ -197,7 +172,7 @@ function import_b2bking_entries($entries) {
                 $sku = sanitize_text($item['ApliesTo'] ?? '');
                 $for_who_data = $item['ForWho'] ?? '';
                 $discount = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
-                $priority = isset($item['Priority']) ? intval($item['Priority']) : 1;
+                $priority = isset($item['Priority']) ? max(1, min(10, intval($item['Priority']))) : 1;
 
                 // Check if product exists (don't create automatically)
                 $product_id = wc_get_product_id_by_sku($sku);
@@ -228,8 +203,10 @@ function import_b2bking_entries($entries) {
                     update_post_meta($post_id, 'b2bking_rule_applies', 'product_' . $product_id);
                     update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                     update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
-                    update_post_meta($post_id, 'b2bking_rule_priority', $priority);
                     update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
+                    update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                    
+                    error_log("B2BKing ERP Sync: Setting priority $priority for discount rule $post_id using b2bking_rule_priority meta key");
 
                     $results[] = "[$index] SUCCESS: Discount rule created for user '{$for_who_display}' on product {$sku} ({$discount}%, Priority: {$priority}, Rule ID: {$post_id})";
                 } else {
@@ -241,6 +218,7 @@ function import_b2bking_entries($entries) {
                 $sku = sanitize_text($item['ApliesTo'] ?? '');
                 $user_data = $item['ForWho'] ?? '';
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
+                $priority = isset($item['Priority']) ? max(1, min(10, intval($item['Priority']))) : 1;
 
                 // Check if product exists (don't create automatically)
                 $product_id = wc_get_product_id_by_sku($sku);
@@ -267,9 +245,11 @@ function import_b2bking_entries($entries) {
                         update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
-                        update_post_meta($post_id, 'b2bking_rule_priority', '1');
+                        update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                        
+                        error_log("B2BKing ERP Sync: Setting priority $priority for fixed price rule $post_id using b2bking_rule_priority meta key");
 
-                        $results[] = "[$index] SUCCESS: Fixed price rule created for user '{$user_display}' on product {$sku} = {$price} (Rule ID: {$post_id})";
+                        $results[] = "[$index] SUCCESS: Fixed price rule created for user '{$user_display}' on product {$sku} = {$price} (Priority: {$priority}, Rule ID: {$post_id})";
                     } else {
                         $results[] = "[$index] ERROR: Failed to create fixed price rule for {$sku}";
                     }
