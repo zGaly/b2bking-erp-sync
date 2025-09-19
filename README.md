@@ -17,7 +17,7 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 - **Prioridade padrão** - valor "1" se não especificado
 - **Interface integrada** - aparece no painel de regras do B2BKing
 
-### 🔧 Tipos de Regras Suportadas
+### Tipos de Regras Suportadas
 - **Group Price / SkuGeneralTab** - Preços fixos para grupos (com Priority)
 - **Discount (Percentage)** - Descontos percentuais para utilizadores (com Priority)
 - **Fixed Price** - Preços fixos para utilizadores específicos (com Priority)
