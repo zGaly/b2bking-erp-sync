@@ -8,18 +8,19 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 - **~~Produtos WooCommerce~~** - **IMPORTANTE:** Produtos devem ser criados manualmente no WooCommerce
 - **Utilizadores WordPress** - Criados com informações completas do ERP
 - **Grupos B2BKing** - Criados baseados em tabelas de preços
-- **Regras Dinâmicas B2BKing** - Aplicadas automaticamente
+- **Regras Dinâmicas B2BKing** - Aplicadas automaticamente com suporte completo a prioridades
 
-### **Sistema de Prioridades**
-- **Prioridades** definem a ordem de aplicação das regras
-- **Valores menores** = **maior prioridade** (executam primeiro)
-- **Campo opcional** - se não especificado, usa prioridade "1"
-- **Todas as regras** suportam o campo `"Priority"`
+### **Sistema de Prioridades** **NOVO**
+- **Campo `Priority`** aceito em todas as regras (1-10)
+- **Validação automática** - valores fora do intervalo são ajustados
+- **Múltiplos campos** - compatibilidade máxima com B2BKing
+- **Prioridade padrão** - valor "1" se não especificado
+- **Interface integrada** - aparece no painel de regras do B2BKing
 
 ### 🔧 Tipos de Regras Suportadas
-- **Group Price / SkuGeneralTab** - Preços fixos para grupos
-- **Discount (Percentage)** - Descontos percentuais para utilizadores
-- **Fixed Price** - Preços fixos para utilizadores específicos
+- **Group Price / SkuGeneralTab** - Preços fixos para grupos (com Priority)
+- **Discount (Percentage)** - Descontos percentuais para utilizadores (com Priority)
+- **Fixed Price** - Preços fixos para utilizadores específicos (com Priority)
 
 ### Gestão Inteligente de Utilizadores
 - **Filtragem automática** - Ignora clientes inativos
@@ -172,7 +173,8 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
       "tipodesc": "Grossista",
       "tabelaPrecos": "A"
     },
-    "HowMuch": "10.50"
+    "HowMuch": "10.50",
+    "Priority": "2"
   }'
 ```
 
@@ -328,6 +330,20 @@ Content-Type: application/json
     "ForWho": "adm_csw",
     "HowMuch": "11",
     "Priority": "1"
+  },
+  {
+    "RuleType": "Fixed Price",
+    "ApliesTo": "SYS-0015300",
+    "ForWho": {
+      "no": "1234",
+      "nome": "Cliente Premium",
+      "email": "premium@cliente.com",
+      "inativo": false,
+      "tipodesc": "VIP",
+      "tabelaPrecos": "PREMIUM"
+    },
+    "HowMuch": "25.50",
+    "Priority": "2"
   }
 ]
 ```

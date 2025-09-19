@@ -155,9 +155,13 @@ function import_b2bking_entries($entries) {
                         update_post_meta($post_id, 'b2bking_rule_who', 'group_' . $group_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
+                        // Set priority in multiple possible fields
+                        update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
                         update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                        update_post_meta($post_id, 'b2bking_priority', $priority);
+                        update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
                         
-                        error_log("B2BKing ERP Sync: Setting priority $priority for group rule $post_id using b2bking_rule_priority meta key");
+                        error_log("B2BKing ERP Sync: Setting priority $priority for group rule $post_id using multiple meta keys");
 
                         $results[] = "[$index] SUCCESS: Group price rule created for product $sku in group $group_name = $price (Priority: $priority, Rule ID: $post_id)";
                     } else {
@@ -204,9 +208,13 @@ function import_b2bking_entries($entries) {
                     update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                     update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
                     update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
+                    // Set priority in multiple possible fields
+                    update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
                     update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                    update_post_meta($post_id, 'b2bking_priority', $priority);
+                    update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
                     
-                    error_log("B2BKing ERP Sync: Setting priority $priority for discount rule $post_id using b2bking_rule_priority meta key");
+                    error_log("B2BKing ERP Sync: Setting priority $priority for discount rule $post_id using multiple meta keys");
 
                     $results[] = "[$index] SUCCESS: Discount rule created for user '{$for_who_display}' on product {$sku} ({$discount}%, Priority: {$priority}, Rule ID: {$post_id})";
                 } else {
@@ -245,9 +253,13 @@ function import_b2bking_entries($entries) {
                         update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
+                        // Set priority in multiple possible fields
+                        update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
                         update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                        update_post_meta($post_id, 'b2bking_priority', $priority);
+                        update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
                         
-                        error_log("B2BKing ERP Sync: Setting priority $priority for fixed price rule $post_id using b2bking_rule_priority meta key");
+                        error_log("B2BKing ERP Sync: Setting priority $priority for fixed price rule $post_id using multiple meta keys");
 
                         $results[] = "[$index] SUCCESS: Fixed price rule created for user '{$user_display}' on product {$sku} = {$price} (Priority: {$priority}, Rule ID: {$post_id})";
                     } else {
