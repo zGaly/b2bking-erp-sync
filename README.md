@@ -1,6 +1,18 @@
 # B2BKing ERP Sync
 
-Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) e B2BKing via REST API.
+Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) e B2BKing via **REST API** e **Funções Internas**.
+
+## Novidades v3.0
+
+### **Duas Formas de Integração**
+- **REST API** - Para sistemas ERP externos (PHC, SAP, etc.)
+- **⚡ Funções Internas** - Para plugins WordPress e integrações diretas
+
+### **Máxima Portabilidade**
+- **Sem autenticação** nas funções internas
+- **Melhor performance** - chamadas diretas
+- **Fácil integração** - apenas incluir e chamar funções
+- **Funciona em qualquer WordPress** - sem configurações especiais
 
 ## Funcionalidades
 
@@ -32,10 +44,31 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 
 1. Faça upload do plugin para `/wp-content/plugins/b2bking-erp-sync/`
 2. Ative o plugin no WordPress
-3. Adicione o token de API ao `wp-config.php`:
 
+### **Para REST API** (opcional):
+3. Adicione o token de API ao `wp-config.php`:
 ```php
 define('B2BKING_API_TOKEN', 'seu_token_seguro_aqui');
+```
+
+### **Para Funções Internas** (recomendado):
+3. Use diretamente no seu código:
+```php
+// Verificar se o plugin está ativo
+if (function_exists('b2bking_erp_create_rule')) {
+    
+    $result = b2bking_erp_create_rule([
+        'RuleType' => 'Fixed Price',
+        'ApliesTo' => 'SKU123',
+        'ForWho' => 'username',
+        'HowMuch' => '10.50',
+        'Priority' => '2'
+    ]);
+    
+    if ($result['status'] === 'completed') {
+        echo 'Regra criada com sucesso!';
+    }
+}
 ```
 
 ## **IMPORTANTE - Pré-requisitos**
@@ -58,12 +91,74 @@ Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**.
 }
 ```
 
-## API Endpoint
+## Métodos de Integração
 
+### **REST API** (Sistemas Externos)
 **URL:** `https://seusite.com/wp-json/custom/v1/import-dados-b2bking`  
 **Método:** `POST`  
 **Autenticação:** Header `X-Auth-Token`  
 **Content-Type:** `application/json`
+
+**Ideal para:**
+- Sistemas ERP externos (PHC, SAP, etc.)
+- Integrações via HTTP
+- Chamadas de outros servidores
+
+### **Funções Internas** **NOVO v3.0**
+**Sem autenticação necessária** - executa dentro do contexto WordPress  
+**Melhor performance** - sem overhead HTTP  
+**Máxima portabilidade** - funciona em qualquer instalação WordPress
+
+**Ideal para:**
+- Plugins WordPress
+- Temas personalizados
+- Cron jobs automáticos
+- Integrações de base de dados
+
+#### Uso Simples:
+```php
+// Criar regra única
+$result = b2bking_erp_create_rule([
+    'RuleType' => 'Fixed Price',
+    'ApliesTo' => 'SKU123',
+    'ForWho' => 'username',
+    'HowMuch' => '10.50',
+    'Priority' => '2'
+]);
+
+// Criar múltiplas regras
+$batch_result = b2bking_erp_create_rules($rules_array);
+```
+
+#### Classe Estática:
+```php
+// Criar regra
+$result = B2BKing_ERP_Sync::create_rule($rule_data);
+
+// Criar utilizador
+$user_id = B2BKing_ERP_Sync::create_user($user_data);
+
+// Criar grupo
+$group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
+```
+
+**📖 [Ver Guia Completo de Funções Internas](docs/internal-functions-guide.md)**
+
+### **Comparação de Métodos**
+
+| Característica | REST API | Funções Internas |
+|---|---|---|
+| **Autenticação** | ✅ Token obrigatório | ❌ Não necessária |
+| **Performance** | ⚠️ Overhead HTTP | ⚡ Chamadas diretas |
+| **Portabilidade** | ⚠️ Configuração endpoint | ✅ Funciona sempre |
+| **Integração** | 🌐 Sistemas externos | 🔌 WordPress nativo |
+| **Debugging** | 📊 Logs de rede | 🐛 Logs PHP diretos |
+| **Segurança** | 🔑 Token-based | 🛡️ WordPress permissions |
+| **Uso** | ERP externos | Plugins/Temas WP |
+$group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
+```
+
+**[Ver Guia Completo de Funções Internas](docs/internal-functions-guide.md)**
 
 ## Formatos JSON Suportados
 
@@ -239,6 +334,14 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
 - PHP 7.4+
 
 ## Changelog
+
+### v3.0 **MAJOR UPDATE - Internal Functions**
+- **NOVO: Funções Internas** - Integração direta sem REST API
+- **⚡ Classe Estática** - `B2BKing_ERP_Sync::create_rule()`
+- **Funções Globais** - `b2bking_erp_create_rule()`, `b2bking_erp_create_rules()`
+- **Integração WordPress** - Hooks, cron jobs, admin interface
+- **Máxima Portabilidade** - Funciona em qualquer WordPress
+- **Documentação Completa** - Guias e exemplos detalhados
 
 ### v2.4 ✨ **NEW FEATURE**
 - **Suporte completo ao campo Priority** - Todas as regras aceitam prioridade customizada
