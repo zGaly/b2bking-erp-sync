@@ -1,22 +1,40 @@
     <?php
     /*
     Plugin Name: B2BKing ERP Sync
-    Description: Custom integration via REST API between ERP (such as PHC) and B2BKing (WooCommerce).
-    Version: 2.2
+    Description: Custom integration via REST API and Internal Functions between ERP (such as PHC) and B2BKing (WooCommerce). Supports both external API calls and direct WordPress function calls for maximum portability.
+    Version: 3.0
     Author: José Luís
     Copyright: (c) 2025 José Luís
     License: Proprietary – All Rights Reserved
     */
 
+    // Prevent direct access
+    if (!defined('ABSPATH')) {
+        exit;
+    }
+
+    // Define plugin version
+    define('B2BKING_ERP_SYNC_VERSION', '3.0');
+
+    // API token is only required for REST API endpoints
+    // Internal functions work without token
     if (!defined('B2BKING_API_TOKEN')) {
-        return;
+        define('B2BKING_API_TOKEN', ''); // Empty token disables REST API
     }
 
     function b2bking_erp_sync_bootstrap()
     {
+        // Core files (required for both REST API and Internal Functions)
         require_once plugin_dir_path(__FILE__) . 'includes/router.php';
         require_once plugin_dir_path(__FILE__) . 'includes/handlers.php';
         require_once plugin_dir_path(__FILE__) . 'includes/utils.php';
+        
+        // v3.0 Internal Functions (work without API token)
+        require_once plugin_dir_path(__FILE__) . 'includes/static-class.php';
+        require_once plugin_dir_path(__FILE__) . 'includes/internal-functions.php';
+        
+        // Log plugin initialization
+        error_log('B2BKing ERP Sync v' . B2BKING_ERP_SYNC_VERSION . ' loaded - Both REST API and Internal Functions available');
     }
     add_action('plugins_loaded', 'b2bking_erp_sync_bootstrap');
 
