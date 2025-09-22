@@ -31,17 +31,3 @@ function handle_b2bking_erp_sync($data) {
         'processed' => count($entries)
     ];
 }
-
-/**
- * Simple function for direct calls
- */
-function b2bking_erp_create_rule($rule_data) {
-    return handle_b2bking_erp_sync($rule_data);
-}
-
-/**
- * Batch function for multiple rules
- */
-function b2bking_erp_create_rules_batch($rules_array) {
-    return handle_b2bking_erp_sync($rules_array);
-}
