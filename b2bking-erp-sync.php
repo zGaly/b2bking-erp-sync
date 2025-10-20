@@ -34,8 +34,12 @@ function b2bking_erp_sync_bootstrap()
     require_once plugin_dir_path(__FILE__) . 'includes/static-class.php';
     require_once plugin_dir_path(__FILE__) . 'includes/internal-functions.php';
     
-    // Log plugin initialization
-    error_log('B2BKing ERP Sync v' . B2BKING_ERP_SYNC_VERSION . ' loaded - Both REST API and Internal Functions available');
+    // Log plugin initialization only once per session
+    $log_key = 'b2bking_erp_sync_logged_v' . B2BKING_ERP_SYNC_VERSION;
+    if (!get_transient($log_key)) {
+        error_log('B2BKing ERP Sync v' . B2BKING_ERP_SYNC_VERSION . ' loaded - Both REST API and Internal Functions available');
+        set_transient($log_key, true, HOUR_IN_SECONDS);
+    }
 }
 
 // REST API callback function
