@@ -2,6 +2,9 @@
 .DS_Store
 Thumbs.db
 
+# Ignore IDE/editor specific files
+docs/internal-functions-guide.md
+
 # Ignore log files
 *.log
 
