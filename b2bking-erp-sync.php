@@ -45,7 +45,14 @@ function b2bking_erp_sync_bootstrap()
 // REST API callback function
 function import_b2bking_json_data_direct($request)
 {
-    error_log('B2BKing ERP Sync: Callback function called!');
+    // Log callback only when debug is enabled or first time per session
+    $callback_log_key = 'b2bking_callback_logged_v' . B2BKING_ERP_SYNC_VERSION;
+    if ((defined('WP_DEBUG') && WP_DEBUG) || !get_transient($callback_log_key)) {
+        error_log('B2BKing ERP Sync: Callback function called!');
+        if (!get_transient($callback_log_key)) {
+            set_transient($callback_log_key, true, HOUR_IN_SECONDS);
+        }
+    }
 
     $data = $request->get_json_params();
     if (!is_array($data)) {
