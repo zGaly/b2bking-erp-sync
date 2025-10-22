@@ -34,25 +34,21 @@ function b2bking_erp_sync_bootstrap()
     require_once plugin_dir_path(__FILE__) . 'includes/static-class.php';
     require_once plugin_dir_path(__FILE__) . 'includes/internal-functions.php';
     
-    // Log plugin initialization only once per session
-    $log_key = 'b2bking_erp_sync_logged_v' . B2BKING_ERP_SYNC_VERSION;
-    if (!get_transient($log_key)) {
-        error_log('B2BKing ERP Sync v' . B2BKING_ERP_SYNC_VERSION . ' loaded - Both REST API and Internal Functions available');
-        set_transient($log_key, true, HOUR_IN_SECONDS);
-    }
+    // Logging disabled to prevent log spam
+    // To enable logging for debugging, uncomment the lines below:
+    // $log_key = 'b2bking_erp_sync_logged_v' . B2BKING_ERP_SYNC_VERSION;
+    // if (!get_transient($log_key)) {
+    //     error_log('B2BKing ERP Sync v' . B2BKING_ERP_SYNC_VERSION . ' loaded - Both REST API and Internal Functions available');
+    //     set_transient($log_key, true, HOUR_IN_SECONDS);
+    // }
 }
 
 // REST API callback function
 function import_b2bking_json_data_direct($request)
 {
-    // Log callback only when debug is enabled or first time per session
-    $callback_log_key = 'b2bking_callback_logged_v' . B2BKING_ERP_SYNC_VERSION;
-    if ((defined('WP_DEBUG') && WP_DEBUG) || !get_transient($callback_log_key)) {
-        error_log('B2BKing ERP Sync: Callback function called!');
-        if (!get_transient($callback_log_key)) {
-            set_transient($callback_log_key, true, HOUR_IN_SECONDS);
-        }
-    }
+    // Logging disabled to prevent log spam
+    // To enable logging for debugging, uncomment the line below:
+    // error_log('B2BKing ERP Sync: Callback function called!');
 
     $data = $request->get_json_params();
     if (!is_array($data)) {
