@@ -45,14 +45,39 @@ function create_user_if_not_exists($user_data) {
         $user_info = $user_data;
     }
 
+    // Debug: Log user data received
+    error_log("B2BKing ERP Sync: Processing user data for username: $username");
+    error_log("B2BKing ERP Sync: User info: " . print_r($user_info, true));
+    
     // Skip inactive users
     if (!empty($user_info['inativo']) && $user_info['inativo'] === true) {
-        error_log("B2BKing ERP Sync: Skipping inactive user: $username");
+        error_log("B2BKing ERP Sync: Skipping inactive user: $username (inativo = true)");
         return false;
     }
 
-    // Check if user already exists
+    // Check if user already exists (by username)
     $user = get_user_by('login', $username);
+    
+    // If not found by username, try to find by ERP customer ID
+    if (!$user && !empty($user_info['no'])) {
+        $users = get_users([
+            'meta_key' => 'erp_customer_id',
+            'meta_value' => $user_info['no'],
+            'number' => 1
+        ]);
+        if (!empty($users)) {
+            $user = $users[0];
+            error_log("B2BKing ERP Sync: Found existing user by ERP ID: {$user_info['no']} -> WordPress ID: {$user->ID}");
+        }
+    }
+    
+    // Also try to find by email if provided
+    if (!$user && !empty($user_info['email'])) {
+        $user = get_user_by('email', $user_info['email']);
+        if ($user) {
+            error_log("B2BKing ERP Sync: Found existing user by email: {$user_info['email']} -> WordPress ID: {$user->ID}");
+        }
+    }
     if ($user) {
         // Update existing user with new information if provided
         if (!empty($user_info)) {
@@ -64,6 +89,13 @@ function create_user_if_not_exists($user_data) {
     // Validate required data
     if (empty($username)) {
         error_log("B2BKing ERP Sync: Cannot create user - username is empty");
+        return false;
+    }
+
+    // Ensure username is string and sanitized
+    $username = sanitize_user($username, true);
+    if (empty($username)) {
+        error_log("B2BKing ERP Sync: Cannot create user - username is invalid after sanitization");
         return false;
     }
 
