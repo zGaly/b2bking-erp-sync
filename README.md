@@ -60,10 +60,20 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 2. Ative o plugin no WordPress
 
 ### **Para REST API** (opcional):
-3. Adicione o token de API ao `wp-config.php`:
+3. Adicione o token de API ao `wp-config.php` (antes de `/* That's all, stop editing! */`):
 ```php
+// B2BKing ERP Sync - REST API Token
 define('B2BKING_API_TOKEN', 'seu_token_seguro_aqui');
 ```
+
+**Gerar token seguro:**
+```bash
+openssl rand -base64 32
+```
+
+**Autenticação suportada (ambos os formatos):**
+- **Bearer Token** (recomendado) - `Authorization: Bearer {token}`
+- **Custom Header** - `X-Auth-Token: {token}`
 
 ### **Para Funções Internas** (recomendado):
 3. Use diretamente no seu código:
@@ -110,13 +120,18 @@ Desde a versão 2.3, o plugin **NÃO cria produtos automaticamente**.
 ### **REST API** (Sistemas Externos)
 **URL:** `https://seusite.com/wp-json/custom/v1/import-dados-b2bking`  
 **Método:** `POST`  
-**Autenticação:** Header `X-Auth-Token`  
+**Autenticação:** Bearer Token OU X-Auth-Token  
 **Content-Type:** `application/json`
+
+**Formatos de Autenticação Suportados:**
+- **Bearer Token** (recomendado): `Authorization: Bearer {token}`
+- **Custom Header**: `X-Auth-Token: {token}`
 
 **Ideal para:**
 - Sistemas ERP externos (PHC, SAP, etc.)
 - Integrações via HTTP
 - Chamadas de outros servidores
+- Ferramentas como Postman, Insomnia
 
 ### **Funções Internas** **NOVO v3.0**
 **Sem autenticação necessária** - executa dentro do contexto WordPress  
@@ -327,9 +342,10 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 
 ## Exemplo de Chamada cURL
 
+### Opção 1: Bearer Token (Recomendado)
 ```bash
 curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
-  -H "X-Auth-Token: seu_token_aqui" \
+  -H "Authorization: Bearer seu_token_aqui" \
   -H "Content-Type: application/json" \
   -d '{
     "RuleType": "Fixed Price",
@@ -347,8 +363,7 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
   }'
 ```
 
-## Exemplo de Chamada cURL
-
+### Opção 2: Custom Header (Retrocompatibilidade)
 ```bash
 curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
   -H "X-Auth-Token: seu_token_aqui" \

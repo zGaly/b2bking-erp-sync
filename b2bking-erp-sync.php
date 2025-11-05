@@ -71,16 +71,6 @@ function import_b2bking_json_data_direct($request)
     ]);
 }
 
-// Register REST API endpoint
-function b2bking_erp_sync_register_route()
-{
-    register_rest_route('custom/v1', '/import-dados-b2bking', [
-        'methods' => 'POST',
-        'callback' => 'import_b2bking_json_data_direct',
-        'permission_callback' => '__return_true',
-    ]);
-}
-
 // Register hooks
 add_action('plugins_loaded', 'b2bking_erp_sync_bootstrap');
-add_action('rest_api_init', 'b2bking_erp_sync_register_route');
+// REST API endpoint registration is handled in includes/router.php with proper authentication
