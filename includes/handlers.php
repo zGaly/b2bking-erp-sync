@@ -2,7 +2,8 @@
 
 // Add the missing functions that we discussed earlier
 if (!function_exists('wc_get_product_id_by_sku')) {
-    function wc_get_product_id_by_sku($sku) {
+    function wc_get_product_id_by_sku($sku)
+    {
         global $wpdb;
         $product_id = $wpdb->get_var(
             $wpdb->prepare(
@@ -14,7 +15,8 @@ if (!function_exists('wc_get_product_id_by_sku')) {
     }
 }
 
-function create_b2bking_group_if_not_exists($group_name) {
+function create_b2bking_group_if_not_exists($group_name)
+{
     $group_id = get_b2bking_group_id_by_name($group_name);
     if ($group_id) {
         return $group_id;
@@ -31,11 +33,12 @@ function create_b2bking_group_if_not_exists($group_name) {
         error_log("B2BKing ERP Sync: Created new B2BKing group: $group_name (ID: $new_group)");
         return $new_group;
     }
-    
+
     return false;
 }
 
-function create_user_if_not_exists($user_data) {
+function create_user_if_not_exists($user_data)
+{
     // Handle both old format (string) and new format (array)
     if (is_string($user_data)) {
         $username = $user_data;
@@ -48,7 +51,7 @@ function create_user_if_not_exists($user_data) {
     // Debug: Log user data received
     error_log("B2BKing ERP Sync: Processing user data for username: $username");
     error_log("B2BKing ERP Sync: User info: " . print_r($user_info, true));
-    
+
     // Skip inactive users
     if (!empty($user_info['inativo']) && $user_info['inativo'] === true) {
         error_log("B2BKing ERP Sync: Skipping inactive user: $username (inativo = true)");
@@ -57,7 +60,7 @@ function create_user_if_not_exists($user_data) {
 
     // Check if user already exists (by username)
     $user = get_user_by('login', $username);
-    
+
     // If not found by username, try to find by ERP customer ID
     if (!$user && !empty($user_info['no'])) {
         $users = get_users([
@@ -70,7 +73,7 @@ function create_user_if_not_exists($user_data) {
             error_log("B2BKing ERP Sync: Found existing user by ERP ID: {$user_info['no']} -> WordPress ID: {$user->ID}");
         }
     }
-    
+
     // Also try to find by email if provided
     if (!$user && !empty($user_info['email'])) {
         $user = get_user_by('email', $user_info['email']);
@@ -102,9 +105,9 @@ function create_user_if_not_exists($user_data) {
     // Create new user
     $email = !empty($user_info['email']) ? sanitize_email($user_info['email']) : $username . '@generated.local';
     $display_name = !empty($user_info['nome']) ? sanitize_text_field($user_info['nome']) : $username;
-    
+
     $user_id = wp_create_user($username, wp_generate_password(), $email);
-    
+
     if (is_wp_error($user_id)) {
         error_log("B2BKing ERP Sync: Failed to create user: $username - " . $user_id->get_error_message());
         return false;
@@ -124,24 +127,25 @@ function create_user_if_not_exists($user_data) {
     return $user_id;
 }
 
-function update_user_data($user_id, $user_info) {
+function update_user_data($user_id, $user_info)
+{
     // Store ERP customer data as user meta
     if (!empty($user_info['no'])) {
         update_user_meta($user_id, 'erp_customer_id', sanitize_text_field($user_info['no']));
     }
-    
+
     if (!empty($user_info['tipodesc'])) {
         update_user_meta($user_id, 'customer_type', sanitize_text_field($user_info['tipodesc']));
     }
-    
+
     if (!empty($user_info['tabelaPrecos'])) {
         $tabela_precos = sanitize_text_field($user_info['tabelaPrecos']);
         update_user_meta($user_id, 'price_table', $tabela_precos);
-        
+
         // Map price table to B2BKing group
         $group_name = "Tabela " . $tabela_precos;
         $group_id = create_b2bking_group_if_not_exists($group_name);
-        
+
         if ($group_id) {
             // Set user's B2BKing group
             update_user_meta($user_id, 'b2bking_customergroup', $group_id);
@@ -150,7 +154,8 @@ function update_user_data($user_id, $user_info) {
     }
 }
 
-function import_b2bking_entries($entries) {
+function import_b2bking_entries($entries)
+{
     $results = [];
 
     foreach ($entries as $index => $item) {
@@ -192,7 +197,7 @@ function import_b2bking_entries($entries) {
                         update_post_meta($post_id, 'b2bking_rule_priority', $priority);
                         update_post_meta($post_id, 'b2bking_priority', $priority);
                         update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
-                        
+
                         error_log("B2BKing ERP Sync: Setting priority $priority for group rule $post_id using multiple meta keys");
 
                         $results[] = "[$index] SUCCESS: Group price rule created for product $sku in group $group_name = $price (Priority: $priority, Rule ID: $post_id)";
@@ -202,9 +207,7 @@ function import_b2bking_entries($entries) {
                 } else {
                     $results[] = "[$index] ERROR: Invalid product, group, or price data ($sku / $group_name / $price)";
                 }
-            }
-
-            elseif ($tipo === 'Discount (Percentage)') {
+            } elseif ($tipo === 'Discount (Percentage)') {
                 $sku = sanitize_text($item['ApliesTo'] ?? '');
                 $for_who_data = $item['ForWho'] ?? '';
                 $discount = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
@@ -245,16 +248,21 @@ function import_b2bking_entries($entries) {
                     update_post_meta($post_id, 'b2bking_rule_priority', $priority);
                     update_post_meta($post_id, 'b2bking_priority', $priority);
                     update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
-                    
+                    // Enable "Show discount everywhere" checkbox
+                    update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere', 1);
+                    update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere_checkbox', 1);
+                    // Enable "Apply Discount as Sale Price" checkbox
+                    update_post_meta($post_id, 'b2bking_rule_discountname_checkbox', 1);
+                    update_post_meta($post_id, 'b2bking_rule_discountname', 'sale');
+
+
                     error_log("B2BKing ERP Sync: Setting priority $priority for discount rule $post_id using multiple meta keys");
 
                     $results[] = "[$index] SUCCESS: Discount rule created for user '{$for_who_display}' on product {$sku} ({$discount}%, Priority: {$priority}, Rule ID: {$post_id})";
                 } else {
                     $results[] = "[$index] ERROR: Failed to create discount rule for {$sku}";
                 }
-            }
-
-            elseif ($tipo === 'Fixed Price') {
+            } elseif ($tipo === 'Fixed Price') {
                 $sku = sanitize_text($item['ApliesTo'] ?? '');
                 $user_data = $item['ForWho'] ?? '';
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
@@ -290,7 +298,7 @@ function import_b2bking_entries($entries) {
                         update_post_meta($post_id, 'b2bking_rule_priority', $priority);
                         update_post_meta($post_id, 'b2bking_priority', $priority);
                         update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
-                        
+
                         error_log("B2BKing ERP Sync: Setting priority $priority for fixed price rule $post_id using multiple meta keys");
 
                         $results[] = "[$index] SUCCESS: Fixed price rule created for user '{$user_display}' on product {$sku} = {$price} (Priority: {$priority}, Rule ID: {$post_id})";
@@ -301,12 +309,9 @@ function import_b2bking_entries($entries) {
                     $user_display = is_array($user_data) ? ($user_data['no'] ?? 'unknown') : $user_data;
                     $results[] = "[$index] ERROR: Product, user, or price data invalid ($sku / $user_display / $price)";
                 }
-            }
-
-            else {
+            } else {
                 $results[] = "[$index] WARNING: Unknown rule type: $tipo";
             }
-
         } catch (Exception $e) {
             $results[] = "[$index] ERROR: Exception - " . $e->getMessage();
             error_log("B2BKing ERP Sync: Exception in entry $index: " . $e->getMessage());
@@ -319,6 +324,6 @@ function import_b2bking_entries($entries) {
             b2bking()->b2bking_clear_rules_caches();
         }
     }
-    
+
     return $results;
 }
