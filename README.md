@@ -2,6 +2,20 @@
 
 Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) e B2BKing via **REST API** e **Funções Internas**.
 
+## Novidades v3.1
+
+### **Melhorias nas Regras de Desconto**
+- **Auto-ativação de checkboxes** - "Show discount everywhere" e "Apply Discount as Sale Price" agora são ativados automaticamente
+- **Busca aprimorada de usuários** - Busca por username, ERP ID e email
+- **Debug melhorado** - Logs mais detalhados para troubleshooting
+- **Validação de usuários** - Tratamento correto de usuários ativos/inativos
+
+### **Campos Configurados Automaticamente**s
+- `b2bking_rule_discount_show_everywhere` = 1
+- `b2bking_rule_discount_show_everywhere_checkbox` = 1
+- `b2bking_rule_discountname_checkbox` = 1
+- `b2bking_rule_discountname` = 'sale'
+
 ## Novidades v3.0
 
 ### **Duas Formas de Integração**

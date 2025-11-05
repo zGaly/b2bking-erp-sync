@@ -2,7 +2,7 @@
 /*
 Plugin Name: B2BKing ERP Sync
 Description: Custom integration via REST API and Internal Functions between ERP (such as PHC) and B2BKing (WooCommerce). Supports both external API calls and direct WordPress function calls for maximum portability.
-Version: 3.0
+Version: 3.1
 Author: José Luís
 Copyright: (c) 2025 José Luís
 License: Proprietary – All Rights Reserved
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin version
-define('B2BKING_ERP_SYNC_VERSION', '3.0');
+define('B2BKING_ERP_SYNC_VERSION', '3.1');
 
 // API token is only required for REST API endpoints
 // Internal functions work without token
