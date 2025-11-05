@@ -162,12 +162,12 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 
 | Característica | REST API | Funções Internas |
 |---|---|---|
-| **Autenticação** | ✅ Token obrigatório | ❌ Não necessária |
+| **Autenticação** | Token obrigatório | Não necessária |
 | **Performance** | ⚠️ Overhead HTTP | ⚡ Chamadas diretas |
-| **Portabilidade** | ⚠️ Configuração endpoint | ✅ Funciona sempre |
-| **Integração** | 🌐 Sistemas externos | 🔌 WordPress nativo |
-| **Debugging** | 📊 Logs de rede | 🐛 Logs PHP diretos |
-| **Segurança** | 🔑 Token-based | 🛡️ WordPress permissions |
+| **Portabilidade** | Configuração endpoint | Funciona sempre |
+| **Integração** | Sistemas externos | WordPress nativo |
+| **Debugging** | Logs de rede | Logs PHP diretos |
+| **Segurança** | Token-based | WordPress permissions |
 | **Uso** | ERP externos | Plugins/Temas WP |
 $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 ```
@@ -176,10 +176,84 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 
 ## Formatos JSON Suportados
 
-### 1. Preço Fixo para Utilizador (com dados completos)
+O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode enviar uma regra individual ou múltiplas regras de uma vez.
+
+### 📋 Especificação do Schema
+
+#### Campos Aceitos (por regra):
+
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|-----------|
+| `RuleType` | string | Sim | Tipo de regra (case-insensitive) |
+| `ApliesTo` | string | Condicional | SKU do produto (usado em `Fixed Price` e `Discount (Percentage)`) |
+| `SKU` | string | Condicional | SKU do produto (usado em `GroupPrice` / `SkuGeneralTab`) |
+| `ForWho` | string ou object | Sim | Username/grupo (string) OU dados completos do cliente (object) |
+| `HowMuch` | string/number | Sim | Valor (preço fixo ou percentagem de desconto) |
+| `Priority` | string/number | Opcional | Prioridade 1-10 (default: 1) |
+
+#### Tipos de Regra Suportados (case-insensitive):
+
+- **`Fixed Price`** / `fixed price` — Preço fixo para utilizador específico
+- **`Discount (Percentage)`** / `discount (percentage)` — Desconto percentual para utilizador
+- **`GroupPrice`** / `groupprice` / `SkuGeneralTab` / `skugeneraltab` — Preço para grupo
+
+#### Formato do Campo `ForWho`:
+
+**Opção 1: String simples** (username ou nome do grupo)
+```json
+"ForWho": "username_or_group_name"
+```
+
+**Opção 2: Objeto completo** (recomendado para criar/atualizar utilizadores)
+```json
+"ForWho": {
+  "no": "6801",              // ID do cliente no ERP
+  "nome": "JoseLda",         // Nome de exibição
+  "email": "email@example.com",
+  "inativo": false,          // Se true, o utilizador é ignorado
+  "tipodesc": "Tabela 1",    // Tipo de cliente
+  "tabelaPrecos": "Tabela 1" // Tabela de preços (mapeia para grupo B2BKing)
+}
+```
+
+### Exemplos Aceitos
+
+#### 1. Desconto Percentual (exemplo real fornecido)
+
+```json
+{
+  "RuleType": "Discount (Percentage)",
+  "ApliesTo": "R0602-020-10",
+  "ForWho": {
+    "no": "6801",
+    "nome": "JoseLda",
+    "email": "josegalinha98@gmail.com",
+    "inativo": false,
+    "tipodesc": "Tabela 1",
+    "tabelaPrecos": "Tabela 1"
+  },
+  "HowMuch": "20",
+  "Priority": "1"
+}
+```
+
+#### 2. Preço Fixo (ForWho como string)
+
 ```json
 {
   "RuleType": "Fixed Price",
+  "ApliesTo": "SKU123",
+  "ForWho": "username_or_erp_no",
+  "HowMuch": "10.50",
+  "Priority": "2"
+}
+```
+
+#### 3. Preço Fixo (ForWho como objeto completo)
+
+```json
+{
+  "RuleType": "fixed price",
   "ApliesTo": "SKU123",
   "ForWho": {
     "no": "5965",
@@ -194,25 +268,8 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 }
 ```
 
-### 2. Desconto Percentual para Utilizador
-```json
-{
-  "RuleType": "Discount (Percentage)",
-  "ApliesTo": "SKU456",
-  "ForWho": {
-    "no": "1234",
-    "nome": "Cliente ABC",
-    "email": "cliente@abc.com",
-    "inativo": false,
-    "tipodesc": "Retalhista",
-    "tabelaPrecos": "B"
-  },
-  "HowMuch": "15.5",
-  "Priority": "1"
-}
-```
+#### 4. Preço para Grupo
 
-### 3. Preço Fixo para Grupo
 ```json
 {
   "RuleType": "GroupPrice",
@@ -223,7 +280,8 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 }
 ```
 
-### 4. Formato Múltiplo (Array)
+#### 5. Array de Múltiplas Regras
+
 ```json
 [
   {
@@ -235,13 +293,37 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
   },
   {
     "RuleType": "Discount (Percentage)",
-    "ApliesTo": "SKU002", 
-    "ForWho": "cliente2",
+    "ApliesTo": "SKU002",
+    "ForWho": {
+      "no": "1234",
+      "nome": "Cliente ABC",
+      "email": "cliente@abc.com",
+      "inativo": false,
+      "tipodesc": "Retalhista",
+      "tabelaPrecos": "B"
+    },
     "HowMuch": "10",
     "Priority": "2"
+  },
+  {
+    "RuleType": "groupprice",
+    "SKU": "SKU003",
+    "ForWho": "Tabela C",
+    "HowMuch": "15.00",
+    "Priority": "3"
   }
 ]
 ```
+
+### Comportamentos Importantes
+
+- **Case-insensitive**: `RuleType` é normalizado automaticamente (`ucwords(strtolower())`)
+- **Produtos NÃO são criados**: O SKU deve existir no WooCommerce (retorna erro se não existir)
+- **Utilizadores criados automaticamente**: Se `ForWho` for um objeto e o utilizador não existir
+- **Grupos criados sob demanda**: Para `GroupPrice`, o grupo é criado se não existir
+- **Utilizadores inativos ignorados**: Se `inativo: true`, a regra é rejeitada
+- **Priority validado**: Valores fora de 1-10 são ajustados automaticamente
+- **Object ou Array**: O endpoint aceita ambos (objeto único é convertido em array internamente)
 
 ## Exemplo de Chamada cURL
 
@@ -357,7 +439,7 @@ curl -X POST "https://seusite.com/wp-json/custom/v1/import-dados-b2bking" \
 - **Máxima Portabilidade** - Funciona em qualquer WordPress
 - **Documentação Completa** - Guias e exemplos detalhados
 
-### v2.4 ✨ **NEW FEATURE**
+### v2.4 **NEW FEATURE**
 - **Suporte completo ao campo Priority** - Todas as regras aceitam prioridade customizada
 - **Sistema de prioridades** - Controlo total sobre ordem de aplicação das regras
 - **Feedback melhorado** - Mensagens de sucesso incluem informação de prioridade
