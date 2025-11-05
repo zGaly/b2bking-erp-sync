@@ -160,9 +160,12 @@ function import_b2bking_entries($entries)
 
     foreach ($entries as $index => $item) {
         $tipo = $item['RuleType'] ?? '';
+        
+        // Normalize rule type to handle case variations
+        $tipo_normalized = ucwords(strtolower($tipo));
 
         try {
-            if (in_array($tipo, ['GroupPrice', 'SkuGeneralTab'])) {
+            if (in_array($tipo_normalized, ['Groupprice', 'Skugeneraltab'])) {
                 $sku = sanitize_text($item['SKU'] ?? '');
                 $group_name = sanitize_text($item['ForWho'] ?? '');
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
@@ -207,7 +210,7 @@ function import_b2bking_entries($entries)
                 } else {
                     $results[] = "[$index] ERROR: Invalid product, group, or price data ($sku / $group_name / $price)";
                 }
-            } elseif ($tipo === 'Discount (Percentage)') {
+            } elseif ($tipo_normalized === 'Discount (percentage)') {
                 $sku = sanitize_text($item['ApliesTo'] ?? '');
                 $for_who_data = $item['ForWho'] ?? '';
                 $discount = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
@@ -262,7 +265,7 @@ function import_b2bking_entries($entries)
                 } else {
                     $results[] = "[$index] ERROR: Failed to create discount rule for {$sku}";
                 }
-            } elseif ($tipo === 'Fixed Price') {
+            } elseif ($tipo_normalized === 'Fixed Price') {
                 $sku = sanitize_text($item['ApliesTo'] ?? '');
                 $user_data = $item['ForWho'] ?? '';
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
@@ -310,7 +313,7 @@ function import_b2bking_entries($entries)
                     $results[] = "[$index] ERROR: Product, user, or price data invalid ($sku / $user_display / $price)";
                 }
             } else {
-                $results[] = "[$index] WARNING: Unknown rule type: $tipo";
+                $results[] = "[$index] WARNING: Unknown rule type: $tipo (normalized: $tipo_normalized)";
             }
         } catch (Exception $e) {
             $results[] = "[$index] ERROR: Exception - " . $e->getMessage();
