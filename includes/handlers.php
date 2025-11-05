@@ -163,6 +163,12 @@ function import_b2bking_entries($entries)
         
         // Normalize rule type to handle case variations
         $tipo_normalized = ucwords(strtolower($tipo));
+        
+        // Normalize HowMuch value: convert comma to dot for decimal numbers
+        // Supports both European (25,6) and American (25.6) formats
+        if (isset($item['HowMuch'])) {
+            $item['HowMuch'] = str_replace(',', '.', (string)$item['HowMuch']);
+        }
 
         try {
             if (in_array($tipo_normalized, ['Groupprice', 'Skugeneraltab'])) {

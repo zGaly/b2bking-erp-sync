@@ -199,12 +199,12 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
-| `RuleType` | string | Sim | Tipo de regra (case-insensitive) |
-| `ApliesTo` | string | Condicional | SKU do produto (usado em `Fixed Price` e `Discount (Percentage)`) |
-| `SKU` | string | Condicional | SKU do produto (usado em `GroupPrice` / `SkuGeneralTab`) |
-| `ForWho` | string ou object | Sim | Username/grupo (string) OU dados completos do cliente (object) |
-| `HowMuch` | string/number | Sim | Valor (preço fixo ou percentagem de desconto) |
-| `Priority` | string/number | Opcional | Prioridade 1-10 (default: 1) |
+| `RuleType` | string | ✅ Sim | Tipo de regra (case-insensitive) |
+| `ApliesTo` | string | ⚠️ Condicional | SKU do produto (usado em `Fixed Price` e `Discount (Percentage)`) |
+| `SKU` | string | ⚠️ Condicional | SKU do produto (usado em `GroupPrice` / `SkuGeneralTab`) |
+| `ForWho` | string ou object | ✅ Sim | Username/grupo (string) OU dados completos do cliente (object) |
+| `HowMuch` | string/number | ✅ Sim | Valor numérico (aceita vírgula ou ponto: `25,6` ou `25.6`) |
+| `Priority` | string/number | ❌ Opcional | Prioridade 1-10 (default: 1) |
 
 #### Tipos de Regra Suportados (case-insensitive):
 
@@ -264,7 +264,20 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 }
 ```
 
-#### 3. Preço Fixo (ForWho como objeto completo)
+#### 3. Desconto com vírgula (formato europeu)
+
+```json
+{
+  "RuleType": "Discount (Percentage)",
+  "ApliesTo": "SKU456",
+  "ForWho": "cliente_xyz",
+  "HowMuch": "25,6",
+  "Priority": "1"
+}
+```
+*Nota: O valor `25,6` é automaticamente convertido para `25.6` internamente*
+
+#### 4. Preço Fixo (ForWho como objeto completo)
 
 ```json
 {
@@ -283,7 +296,7 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 }
 ```
 
-#### 4. Preço para Grupo
+#### 5. Preço para Grupo
 
 ```json
 {
@@ -295,7 +308,7 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 }
 ```
 
-#### 5. Array de Múltiplas Regras
+#### 6. Array de Múltiplas Regras
 
 ```json
 [
@@ -330,9 +343,10 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 ]
 ```
 
-### Comportamentos Importantes
+### ⚙️ Comportamentos Importantes
 
 - **Case-insensitive**: `RuleType` é normalizado automaticamente (`ucwords(strtolower())`)
+- **Normalização decimal**: Vírgulas em `HowMuch` são convertidas automaticamente para pontos (25,6 → 25.6)
 - **Produtos NÃO são criados**: O SKU deve existir no WooCommerce (retorna erro se não existir)
 - **Utilizadores criados automaticamente**: Se `ForWho` for um objeto e o utilizador não existir
 - **Grupos criados sob demanda**: Para `GroupPrice`, o grupo é criado se não existir
