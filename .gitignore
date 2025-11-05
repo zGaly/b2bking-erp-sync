@@ -1,6 +1,8 @@
 # Ignore system files
 .DS_Store
 Thumbs.db
+.github
+.vscode
 
 # Ignore IDE/editor specific files
 docs/internal-functions-guide.md
