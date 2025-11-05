@@ -20,7 +20,7 @@ Plugin WordPress para sincronização automática entre sistemas ERP (como PHC) 
 
 ### **Duas Formas de Integração**
 - **REST API** - Para sistemas ERP externos (PHC, SAP, etc.)
-- **⚡ Funções Internas** - Para plugins WordPress e integrações diretas
+- **Funções Internas** - Para plugins WordPress e integrações diretas
 
 ### **Máxima Portabilidade**
 - **Sem autenticação** nas funções internas
