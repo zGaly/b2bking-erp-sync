@@ -178,7 +178,7 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 | Característica | REST API | Funções Internas |
 |---|---|---|
 | **Autenticação** | Token obrigatório | Não necessária |
-| **Performance** | ⚠️ Overhead HTTP | ⚡ Chamadas diretas |
+| **Performance** | Overhead HTTP | ⚡ Chamadas diretas |
 | **Portabilidade** | Configuração endpoint | Funciona sempre |
 | **Integração** | Sistemas externos | WordPress nativo |
 | **Debugging** | Logs de rede | Logs PHP diretos |
@@ -193,7 +193,7 @@ $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 
 O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode enviar uma regra individual ou múltiplas regras de uma vez.
 
-### 📋 Especificação do Schema
+### Especificação do Schema
 
 #### Campos Aceitos (por regra):
 
@@ -234,7 +234,7 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 }
 ```
 
-### Exemplos Aceitos
+### Exemplos Aceites
 
 #### 1. Desconto Percentual (exemplo real fornecido)
 
