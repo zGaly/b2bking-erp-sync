@@ -265,11 +265,17 @@ function import_b2bking_entries($entries)
                         update_post_meta($post_id, 'b2bking_rule_howmuch', $price);
                         update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
                         update_post_meta($post_id, 'b2bking_rule_who', 'group_' . $group_id);
+                        
+                        // Store each product separately for B2BKing admin interface FIRST
+                        delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
+                        foreach ($multiple_options_array as $prod_id) {
+                            add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
+                            error_log("B2BKing ERP Sync: Added select option for rule $post_id: $prod_id");
+                        }
+                        
+                        // Then set the other meta fields
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
                         update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
-                        // Store array for B2BKing admin interface
-                        update_post_meta($post_id, 'b2bking_rule_select_multiple_options', $multiple_options_array);
-                        
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                         // Set priority in multiple possible fields
                         update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
@@ -336,11 +342,17 @@ function import_b2bking_entries($entries)
                         update_post_meta($post_id, 'b2bking_rule_howmuch', $discount);
                         update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
                         update_post_meta($post_id, 'b2bking_rule_who', 'group_' . $group_id);
+                        
+                        // Store each product separately for B2BKing admin interface FIRST
+                        delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
+                        foreach ($multiple_options_array as $prod_id) {
+                            add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
+                            error_log("B2BKing ERP Sync: Added select option for rule $post_id: $prod_id");
+                        }
+                        
+                        // Then set the other meta fields
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
                         update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
-                        // Store array for B2BKing admin interface
-                        update_post_meta($post_id, 'b2bking_rule_select_multiple_options', $multiple_options_array);
-                        
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                         // Set priority in multiple possible fields
                         update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
@@ -352,7 +364,7 @@ function import_b2bking_entries($entries)
                         update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere_checkbox', 1);
                         // Enable "Apply Discount as Sale Price" checkbox
                         update_post_meta($post_id, 'b2bking_rule_discountname_checkbox', 1);
-                        update_post_meta($post_id, 'b2bking_rule_discountname', 'sale');
+                        update_post_meta($post_id, 'b2bking_rule_discountname', '');
 
                         error_log("B2BKing ERP Sync: Setting priority $priority for group discount rule $post_id using multiple meta keys");
 
@@ -420,11 +432,17 @@ function import_b2bking_entries($entries)
                         update_post_meta($post_id, 'b2bking_rule_howmuch', $discount);
                         update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
                         update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
+                        
+                        // Store each product separately for B2BKing admin interface FIRST
+                        delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
+                        foreach ($multiple_options_array as $prod_id) {
+                            add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
+                            error_log("B2BKing ERP Sync: Added select option for rule $post_id: $prod_id");
+                        }
+                        
+                        // Then set the other meta fields
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
                         update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
-                        // Store array for B2BKing admin interface
-                        update_post_meta($post_id, 'b2bking_rule_select_multiple_options', $multiple_options_array);
-                        
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                         // Set priority in multiple possible fields
                         update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
@@ -501,8 +519,11 @@ function import_b2bking_entries($entries)
                         update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
                         update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
-                        // Store array for B2BKing admin interface
-                        update_post_meta($post_id, 'b2bking_rule_select_multiple_options', $multiple_options_array);
+                        // Store each product separately for B2BKing admin interface
+                        delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
+                        foreach ($multiple_options_array as $prod_id) {
+                            add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
+                        }
                         
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                         // Set priority in multiple possible fields
