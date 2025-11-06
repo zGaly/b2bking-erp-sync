@@ -346,7 +346,7 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 }
 ```
 
-#### 6. Desconto Percentual para Grupo (múltiplos produtos) ✨ NOVO v3.1
+#### 6. Desconto Percentual para Grupo (múltiplos produtos) NOVO v3.1
 
 **Uma só regra para vários produtos:**
 
@@ -400,7 +400,7 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 ]
 ```
 
-### ⚙️ Comportamentos Importantes
+### Comportamentos Importantes
 
 - **Case-insensitive**: `RuleType` é normalizado automaticamente (`ucwords(strtolower())`)
 - **Normalização decimal**: Vírgulas em `HowMuch` são convertidas automaticamente para pontos (25,6 → 25.6)
