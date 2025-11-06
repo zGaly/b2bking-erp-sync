@@ -15,6 +15,14 @@ if (!function_exists('wc_get_product_id_by_sku')) {
     }
 }
 
+if (!function_exists('wc_get_product_title_by_id')) {
+    function wc_get_product_title_by_id($product_id)
+    {
+        $product = wc_get_product($product_id);
+        return $product ? $product->get_name() : '';
+    }
+}
+
 function create_b2bking_group_if_not_exists($group_name)
 {
     $group_id = get_b2bking_group_id_by_name($group_name);
@@ -197,9 +205,16 @@ function import_b2bking_entries($entries)
                     if ($post_id && !is_wp_error($post_id)) {
                         update_post_meta($post_id, 'b2bking_rule_what', 'fixed_price');
                         update_post_meta($post_id, 'b2bking_rule_howmuch', $price);
-                        update_post_meta($post_id, 'b2bking_rule_applies', 'product_' . $product_id);
+                        update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
                         update_post_meta($post_id, 'b2bking_rule_who', 'group_' . $group_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
+                        
+                        // Add product name for visual selector
+                        $product_title = wc_get_product_title_by_id($product_id);
+                        if ($product_title) {
+                            update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $product_title . ' (Product)');
+                        }
+                        
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                         // Set priority in multiple possible fields
                         update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
@@ -248,9 +263,16 @@ function import_b2bking_entries($entries)
                 if ($post_id && !is_wp_error($post_id)) {
                     update_post_meta($post_id, 'b2bking_rule_what', 'discount_percentage');
                     update_post_meta($post_id, 'b2bking_rule_howmuch', $discount);
-                    update_post_meta($post_id, 'b2bking_rule_applies', 'product_' . $product_id);
+                    update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
                     update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                     update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
+                    
+                    // Add product name for visual selector
+                    $product_title = wc_get_product_title_by_id($product_id);
+                    if ($product_title) {
+                        update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $product_title . ' (Product)');
+                    }
+                    
                     update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                     // Set priority in multiple possible fields
                     update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
@@ -298,9 +320,16 @@ function import_b2bking_entries($entries)
                     if ($post_id && !is_wp_error($post_id)) {
                         update_post_meta($post_id, 'b2bking_rule_what', 'fixed_price');
                         update_post_meta($post_id, 'b2bking_rule_howmuch', $price);
-                        update_post_meta($post_id, 'b2bking_rule_applies', 'product_' . $product_id);
+                        update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
                         update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
                         update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', 'product_' . $product_id);
+                        
+                        // Add product name for visual selector
+                        $product_title = wc_get_product_title_by_id($product_id);
+                        if ($product_title) {
+                            update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $product_title . ' (Product)');
+                        }
+                        
                         update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
                         // Set priority in multiple possible fields
                         update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
