@@ -171,7 +171,7 @@ $user_id = B2BKing_ERP_Sync::create_user($user_data);
 $group_id = B2BKing_ERP_Sync::create_group('Nome do Grupo');
 ```
 
-**📖 [Ver Guia Completo de Funções Internas](docs/internal-functions-guide.md)**
+**[Ver Guia Completo de Funções Internas](docs/internal-functions-guide.md)**
 
 ### **Comparação de Métodos**
 
@@ -199,18 +199,21 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
-| `RuleType` | string | ✅ Sim | Tipo de regra (case-insensitive) |
-| `ApliesTo` | string | ⚠️ Condicional | SKU do produto (usado em `Fixed Price` e `Discount (Percentage)`) |
-| `SKU` | string | ⚠️ Condicional | SKU do produto (usado em `GroupPrice` / `SkuGeneralTab`) |
-| `ForWho` | string ou object | ✅ Sim | Username/grupo (string) OU dados completos do cliente (object) |
-| `HowMuch` | string/number | ✅ Sim | Valor numérico (aceita vírgula ou ponto: `25,6` ou `25.6`) |
-| `Priority` | string/number | ❌ Opcional | Prioridade 1-10 (default: 1) |
+| `RuleType` | string | Sim | Tipo de regra (case-insensitive) |
+| `ApliesTo` | string **ou array** | Condicional | SKU(s) do produto (usado em `Fixed Price` e `Discount (Percentage)`) |
+| `SKU` | string **ou array** | Condicional | SKU(s) do produto (usado em `GroupPrice`, `GroupDiscount` e `SkuGeneralTab`) |
+| `ForWho` | string ou object | Sim | Username/grupo (string) OU dados completos do cliente (object) |
+| `HowMuch` | string/number | Sim | Valor numérico (aceita vírgula ou ponto: `25,6` ou `25.6`) |
+| `Priority` | string/number | Opcional | Prioridade 1-10 (default: 1) |
+
+> **NOVO v3.1:** Os campos `SKU` e `ApliesTo` agora aceitam **arrays de SKUs** para aplicar a mesma regra a múltiplos produtos de uma só vez!
 
 #### Tipos de Regra Suportados (case-insensitive):
 
 - **`Fixed Price`** / `fixed price` — Preço fixo para utilizador específico
 - **`Discount (Percentage)`** / `discount (percentage)` — Desconto percentual para utilizador
-- **`GroupPrice`** / `groupprice` / `SkuGeneralTab` / `skugeneraltab` — Preço para grupo
+- **`GroupPrice`** / `groupprice` / `SkuGeneralTab` / `skugeneraltab` — Preço fixo para grupo
+- **`GroupDiscount`** / `groupdiscount` — Desconto percentual para grupo
 
 #### Formato do Campo `ForWho`:
 
@@ -275,6 +278,41 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
   "Priority": "1"
 }
 ```
+
+#### 4. Múltiplos Produtos (array de SKUs) ✨ NOVO v3.1
+
+**Aplicar mesma regra a vários produtos:**
+
+```json
+{
+  "RuleType": "GroupPrice",
+  "SKU": ["SKU001", "SKU002", "SKU003"],
+  "ForWho": "Tabela 1",
+  "HowMuch": "15.99",
+  "Priority": "3"
+}
+```
+
+**Desconto em múltiplos produtos:**
+
+```json
+{
+  "RuleType": "Discount (Percentage)",
+  "ApliesTo": ["PROD-A", "PROD-B", "PROD-C", "PROD-D"],
+  "ForWho": {
+    "no": "1234",
+    "nome": "Cliente VIP",
+    "email": "vip@example.com"
+  },
+  "HowMuch": "30",
+  "Priority": "5"
+}
+```
+
+**Resultado:**
+- Cria **UMA regra** que se aplica aos 4 produtos
+- Visual do B2BKing mostra: `"Product A (Product), Product B (Product), Product C (Product), Product D (Product)"`
+- Mais eficiente que criar 4 regras separadas
 *Nota: O valor `25,6` é automaticamente convertido para `25.6` internamente*
 
 #### 4. Preço Fixo (ForWho como objeto completo)
@@ -296,19 +334,38 @@ O plugin aceita **tanto um único objeto JSON quanto um array de objetos**. Pode
 }
 ```
 
-#### 5. Preço para Grupo
+#### 5. Preço Fixo para Grupo
 
 ```json
 {
   "RuleType": "GroupPrice",
   "SKU": "SKU789",
-  "ForWho": "Grossistas",
+  "ForWho": "Tabela 1",
   "HowMuch": "25.00",
   "Priority": "3"
 }
 ```
 
-#### 6. Array de Múltiplas Regras
+#### 6. Desconto Percentual para Grupo (múltiplos produtos) ✨ NOVO v3.1
+
+**Uma só regra para vários produtos:**
+
+```json
+{
+  "RuleType": "GroupDiscount",
+  "SKU": ["R1601-800-64", "R1601-800-65", "R1601-800-66"],
+  "ForWho": "Tabela 1",
+  "HowMuch": "15",
+  "Priority": "2"
+}
+```
+
+**Resultado:**
+- Cria regra única aplicada aos 3 produtos
+- Desconto de 15% para grupo "Tabela 1"
+- Checkboxes "Show discount everywhere" e "Apply as sale price" automaticamente ativadas
+
+#### 7. Array de Múltiplas Regras
 
 ```json
 [
