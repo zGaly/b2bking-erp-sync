@@ -59,6 +59,37 @@ if (!function_exists('process_multiple_skus')) {
     }
 }
 
+if (!function_exists('process_multiple_users')) {
+    /**
+     * Process user(s) - accepts single user data or array of users
+     * Returns array with user_ids or errors
+     */
+    function process_multiple_users($user_input)
+    {
+        // If it's a single user object/string, convert to array
+        $users = (is_array($user_input) && !isset($user_input['no'])) ? $user_input : [$user_input];
+        $user_ids = [];
+        $errors = [];
+        
+        foreach ($users as $user_data) {
+            $user_id = create_user_if_not_exists($user_data);
+            
+            if (!$user_id) {
+                $user_display = is_array($user_data) ? ($user_data['no'] ?? 'unknown') : $user_data;
+                $errors[] = "Could not create/find user: $user_display (may be inactive)";
+            } else {
+                $user_ids[] = $user_id;
+            }
+        }
+        
+        return [
+            'user_ids' => $user_ids,
+            'errors' => $errors,
+            'count' => count($user_ids)
+        ];
+    }
+}
+
 function create_b2bking_group_if_not_exists($group_name)
 {
     $group_id = get_b2bking_group_id_by_name($group_name);
@@ -393,82 +424,93 @@ function import_b2bking_entries($entries)
                     }
                 }
 
-                // Create user with full data if it doesn't exist
-                $user_id = create_user_if_not_exists($for_who_data);
-                if (!$user_id) {
-                    $for_who_display = is_array($for_who_data) ? ($for_who_data['no'] ?? 'unknown') : $for_who_data;
-                    $results[] = "[$index] ERROR: Could not create/find user: $for_who_display (may be inactive)";
-                    continue;
+                // Process user(s) - can be single user or array of users
+                $user_data = process_multiple_users($for_who_data);
+                
+                if (!empty($user_data['errors'])) {
+                    foreach ($user_data['errors'] as $error) {
+                        $results[] = "[$index] ERROR: $error";
+                    }
+                    if ($user_data['count'] === 0) {
+                        continue;
+                    }
                 }
 
-                if ($product_data['count'] > 0) {
-                    // Build comma-separated product list for B2BKing
-                    $product_ids_string = implode(',', array_map(function($id) { 
-                        return 'product_' . $id; 
-                    }, $product_data['product_ids']));
-                    
-                    // Build title selector string
-                    $selector_value = implode(', ', $product_data['product_titles']);
-                    
-                    // Build array of product IDs for multiple selection
-                    $multiple_options_array = array_map(function($id) {
-                        return 'product_' . $id;
-                    }, $product_data['product_ids']);
-                    
-                    // Create descriptive title
-                    $sku_display = is_array($sku_input) ? implode(', ', $sku_input) : $sku_input;
-                    $product_count = $product_data['count'] > 1 ? " ({$product_data['count']} products)" : "";
-                    
-                    // Create B2BKing discount rule
-                    $for_who_display = is_array($for_who_data) ? ($for_who_data['no'] ?? 'unknown') : $for_who_data;
-                    $post_id = wp_insert_post([
-                        'post_type' => 'b2bking_rule',
-                        'post_status' => 'publish',
-                        'post_title' => "Discount {$discount}% for {$for_who_display} on {$sku_display}$product_count"
-                    ]);
-
-                    if ($post_id && !is_wp_error($post_id)) {
-                        update_post_meta($post_id, 'b2bking_rule_what', 'discount_percentage');
-                        update_post_meta($post_id, 'b2bking_rule_howmuch', $discount);
-                        update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
-                        update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
+                // Create a separate rule for each user
+                foreach ($user_data['user_ids'] as $user_id) {
+                    if ($product_data['count'] > 0) {
+                        // Build comma-separated product list for B2BKing
+                        $product_ids_string = implode(',', array_map(function($id) { 
+                            return 'product_' . $id; 
+                        }, $product_data['product_ids']));
                         
-                        // Store each product separately for B2BKing admin interface FIRST
-                        delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
-                        foreach ($multiple_options_array as $prod_id) {
-                            add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
-                            error_log("B2BKing ERP Sync: Added select option for rule $post_id: $prod_id");
+                        // Build title selector string
+                        $selector_value = implode(', ', $product_data['product_titles']);
+                        
+                        // Build array of product IDs for multiple selection
+                        $multiple_options_array = array_map(function($id) {
+                            return 'product_' . $id;
+                        }, $product_data['product_ids']);
+                        
+                        // Create descriptive title
+                        $sku_display = is_array($sku_input) ? implode(', ', $sku_input) : $sku_input;
+                        $product_count = $product_data['count'] > 1 ? " ({$product_data['count']} products)" : "";
+                        
+                        // Get user display name
+                        $user = get_userdata($user_id);
+                        $user_display = $user ? $user->user_login : "User ID $user_id";
+                        
+                        // Create B2BKing discount rule
+                        $post_id = wp_insert_post([
+                            'post_type' => 'b2bking_rule',
+                            'post_status' => 'publish',
+                            'post_title' => "Discount {$discount}% for {$user_display} on {$sku_display}$product_count"
+                        ]);
+
+                        if ($post_id && !is_wp_error($post_id)) {
+                            update_post_meta($post_id, 'b2bking_rule_what', 'discount_percentage');
+                            update_post_meta($post_id, 'b2bking_rule_howmuch', $discount);
+                            update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
+                            update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
+                            
+                            // Store each product separately for B2BKing admin interface FIRST
+                            delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
+                            foreach ($multiple_options_array as $prod_id) {
+                                add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
+                                error_log("B2BKing ERP Sync: Added select option for rule $post_id: $prod_id");
+                            }
+                            
+                            // Then set the other meta fields
+                            update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
+                            update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
+                            update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
+                            // Set priority in multiple possible fields
+                            update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
+                            update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                            update_post_meta($post_id, 'b2bking_priority', $priority);
+                            update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
+                            // Enable "Show discount everywhere" checkbox
+                            update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere', 1);
+                            update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere_checkbox', 1);
+                            // Enable "Apply Discount as Sale Price" checkbox
+                            update_post_meta($post_id, 'b2bking_rule_discountname_checkbox', 1);
+                            update_post_meta($post_id, 'b2bking_rule_discountname', '');
+
+                            error_log("B2BKing ERP Sync: Setting priority $priority for discount rule $post_id using multiple meta keys");
+
+                            $results[] = "[$index] SUCCESS: Discount rule created for user '{$user_display}' on $sku_display ({$discount}%, Priority: {$priority}, Rule ID: {$post_id}, Products: {$product_data['count']})";
+                        } else {
+                            $results[] = "[$index] ERROR: Failed to create discount rule for user '{$user_display}'";
                         }
-                        
-                        // Then set the other meta fields
-                        update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
-                        update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
-                        update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
-                        // Set priority in multiple possible fields
-                        update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
-                        update_post_meta($post_id, 'b2bking_rule_priority', $priority);
-                        update_post_meta($post_id, 'b2bking_priority', $priority);
-                        update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
-                        // Enable "Show discount everywhere" checkbox
-                        update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere', 1);
-                        update_post_meta($post_id, 'b2bking_rule_discount_show_everywhere_checkbox', 1);
-                        // Enable "Apply Discount as Sale Price" checkbox
-                        update_post_meta($post_id, 'b2bking_rule_discountname_checkbox', 1);
-                        update_post_meta($post_id, 'b2bking_rule_discountname', '');
-
-
-                        error_log("B2BKing ERP Sync: Setting priority $priority for discount rule $post_id using multiple meta keys");
-
-                        $results[] = "[$index] SUCCESS: Discount rule created for user '{$for_who_display}' on $sku_display ({$discount}%, Priority: {$priority}, Rule ID: {$post_id}, Products: {$product_data['count']})";
-                    } else {
-                        $results[] = "[$index] ERROR: Failed to create discount rule";
                     }
-                } else {
+                }
+                
+                if ($product_data['count'] === 0) {
                     $results[] = "[$index] ERROR: No valid products found";
                 }
             } elseif ($tipo_normalized === 'Fixed Price') {
                 $sku_input = $item['ApliesTo'] ?? '';
-                $user_data = $item['ForWho'] ?? '';
+                $for_who_data = $item['ForWho'] ?? '';
                 $price = isset($item['HowMuch']) ? floatval($item['HowMuch']) : null;
                 $priority = isset($item['Priority']) ? max(1, min(10, intval($item['Priority']))) : 1;
 
@@ -484,64 +526,84 @@ function import_b2bking_entries($entries)
                     }
                 }
 
-                $user_id = create_user_if_not_exists($user_data);
-
-                if ($product_data['count'] > 0 && $user_id && is_numeric($price)) {
-                    // Build comma-separated product list for B2BKing
-                    $product_ids_string = implode(',', array_map(function($id) { 
-                        return 'product_' . $id; 
-                    }, $product_data['product_ids']));
-                    
-                    // Build title selector string
-                    $selector_value = implode(', ', $product_data['product_titles']);
-                    
-                    // Build array of product IDs for multiple selection
-                    $multiple_options_array = array_map(function($id) {
-                        return 'product_' . $id;
-                    }, $product_data['product_ids']);
-                    
-                    // Create descriptive title
-                    $sku_display = is_array($sku_input) ? implode(', ', $sku_input) : $sku_input;
-                    $product_count = $product_data['count'] > 1 ? " ({$product_data['count']} products)" : "";
-                    
-                    // Create B2BKing fixed price rule
-                    $user_display = is_array($user_data) ? ($user_data['no'] ?? 'unknown') : $user_data;
-                    $post_id = wp_insert_post([
-                        'post_type' => 'b2bking_rule',
-                        'post_status' => 'publish',
-                        'post_title' => "Fixed Price {$price} for {$user_display} on {$sku_display}$product_count"
-                    ]);
-
-                    if ($post_id && !is_wp_error($post_id)) {
-                        update_post_meta($post_id, 'b2bking_rule_what', 'fixed_price');
-                        update_post_meta($post_id, 'b2bking_rule_howmuch', $price);
-                        update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
-                        update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
-                        update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
-                        update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
-                        // Store each product separately for B2BKing admin interface
-                        delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
-                        foreach ($multiple_options_array as $prod_id) {
-                            add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
-                        }
-                        
-                        update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
-                        // Set priority in multiple possible fields
-                        update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
-                        update_post_meta($post_id, 'b2bking_rule_priority', $priority);
-                        update_post_meta($post_id, 'b2bking_priority', $priority);
-                        update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
-
-                        error_log("B2BKing ERP Sync: Setting priority $priority for fixed price rule $post_id using multiple meta keys");
-
-                        $results[] = "[$index] SUCCESS: Fixed price rule created for user '{$user_display}' on $sku_display = {$price} (Priority: {$priority}, Rule ID: {$post_id}, Products: {$product_data['count']})";
-                    } else {
-                        $results[] = "[$index] ERROR: Failed to create fixed price rule for $sku_display";
+                // Process user(s) - can be single user or array of users
+                $user_data = process_multiple_users($for_who_data);
+                
+                if (!empty($user_data['errors'])) {
+                    foreach ($user_data['errors'] as $error) {
+                        $results[] = "[$index] ERROR: $error";
                     }
-                } else {
-                    $user_display = is_array($user_data) ? ($user_data['no'] ?? 'unknown') : $user_data;
+                    if ($user_data['count'] === 0) {
+                        continue;
+                    }
+                }
+
+                // Create a separate rule for each user
+                foreach ($user_data['user_ids'] as $user_id) {
+                    if ($product_data['count'] > 0 && is_numeric($price)) {
+                        // Build comma-separated product list for B2BKing
+                        $product_ids_string = implode(',', array_map(function($id) { 
+                            return 'product_' . $id; 
+                        }, $product_data['product_ids']));
+                        
+                        // Build title selector string
+                        $selector_value = implode(', ', $product_data['product_titles']);
+                        
+                        // Build array of product IDs for multiple selection
+                        $multiple_options_array = array_map(function($id) {
+                            return 'product_' . $id;
+                        }, $product_data['product_ids']);
+                        
+                        // Create descriptive title
+                        $sku_display = is_array($sku_input) ? implode(', ', $sku_input) : $sku_input;
+                        $product_count = $product_data['count'] > 1 ? " ({$product_data['count']} products)" : "";
+                        
+                        // Get user display name
+                        $user = get_userdata($user_id);
+                        $user_display = $user ? $user->user_login : "User ID $user_id";
+                        
+                        // Create B2BKing fixed price rule
+                        $post_id = wp_insert_post([
+                            'post_type' => 'b2bking_rule',
+                            'post_status' => 'publish',
+                            'post_title' => "Fixed Price {$price} for {$user_display} on {$sku_display}$product_count"
+                        ]);
+
+                        if ($post_id && !is_wp_error($post_id)) {
+                            update_post_meta($post_id, 'b2bking_rule_what', 'fixed_price');
+                            update_post_meta($post_id, 'b2bking_rule_howmuch', $price);
+                            update_post_meta($post_id, 'b2bking_rule_applies', 'multiple_options');
+                            update_post_meta($post_id, 'b2bking_rule_who', 'user_' . $user_id);
+                            
+                            // Store each product separately for B2BKing admin interface FIRST
+                            delete_post_meta($post_id, 'b2bking_rule_select_multiple_options');
+                            foreach ($multiple_options_array as $prod_id) {
+                                add_post_meta($post_id, 'b2bking_rule_select_multiple_options', $prod_id, false);
+                                error_log("B2BKing ERP Sync: Added select option for rule $post_id: $prod_id");
+                            }
+                            
+                            // Then set the other meta fields
+                            update_post_meta($post_id, 'b2bking_rule_applies_multiple_options', $product_ids_string);
+                            update_post_meta($post_id, 'b2bking_rule_select_multiple_product_categories_selector_value', $selector_value);
+                            update_post_meta($post_id, 'b2bking_rule_conditions', 'none');
+                            // Set priority in multiple possible fields
+                            update_post_meta($post_id, 'b2bking_standard_rule_priority', $priority);
+                            update_post_meta($post_id, 'b2bking_rule_priority', $priority);
+                            update_post_meta($post_id, 'b2bking_priority', $priority);
+                            update_post_meta($post_id, 'b2bking_rule_priority_text', $priority);
+
+                            error_log("B2BKing ERP Sync: Setting priority $priority for fixed price rule $post_id using multiple meta keys");
+
+                            $results[] = "[$index] SUCCESS: Fixed price rule created for user '{$user_display}' on $sku_display = {$price} (Priority: {$priority}, Rule ID: {$post_id}, Products: {$product_data['count']})";
+                        } else {
+                            $results[] = "[$index] ERROR: Failed to create fixed price rule for user '{$user_display}' on $sku_display";
+                        }
+                    }
+                }
+                
+                if ($product_data['count'] === 0 || !is_numeric($price)) {
                     $sku_display = is_array($sku_input) ? implode(', ', $sku_input) : $sku_input;
-                    $results[] = "[$index] ERROR: Product, user, or price data invalid ($sku_display / $user_display / $price)";
+                    $results[] = "[$index] ERROR: Invalid product or price data ($sku_display / $price)";
                 }
             } else {
                 $results[] = "[$index] WARNING: Unknown rule type: $tipo (normalized: $tipo_normalized)";
